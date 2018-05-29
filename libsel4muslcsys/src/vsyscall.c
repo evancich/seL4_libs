@@ -131,6 +131,8 @@ static muslcsys_syscall_t syscall_table[MUSLC_NUM_SYSCALLS] = {
 #endif
     [__NR_mremap] = sys_mremap,
     [__NR_madvise] = sys_madvise,
+
+    [__NR_nanosleep] = sys_nanosleep,
 };
 
 /* Additional syscall lookup table for handling spare syscalls or syscalls that have large

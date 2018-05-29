@@ -41,4 +41,5 @@ long sys_mmap(va_list ap);
 long sys_mremap(va_list ap);
 long sys_writev(va_list ap);
 long sys_madvise(va_list ap);
+long sys_nanosleep(va_list ap);
 
