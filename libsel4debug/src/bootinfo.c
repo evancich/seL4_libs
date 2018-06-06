@@ -56,8 +56,8 @@ debug_print_bootinfo(seL4_BootInfo *info)
 	    totalsize += tempsize;
         }
     }
-    totalsize /= (1024*1024);
-    printf("Grand total free memory = %d MB\n", (totalsize & 0xffffffff));
+    totalsize /= (uint64_t)(1024*1024);
+    printf("Grand total free memory = %d MB\n", (int)totalsize);
 }
 
 #endif  /* CONFIG_USER_DEBUG_BUILD */
