@@ -25,14 +25,14 @@ static inline seL4_Word api_make_guard_word(seL4_Word guard, seL4_Word guard_siz
        into the datastructure so there is no need for us to do anything beyond
        blindly pass them in */
     //NO, we like blidly passing them in...
-    seL4_Word tw = guard << 6;
-    return tw | (guard_size&0x3f);
-    //return seL4_CNode_CapData_new(guard, guard_size).words[0];
+    //seL4_Word tw = guard << 6;
+    //return tw | (guard_size&0x3f);
+    return seL4_CNode_CapData_new(guard, guard_size).words[0];
 }
 
 /* Helper for making an empty guard. Typically a guard matches zeroes and is effectively acting
    as a skip. This is a convenience wrapper and api_make_guard_word */
 static inline seL4_Word api_make_guard_skip_word(seL4_Word guard_size) {
-    return guard_size&0x3f;
-    //return api_make_guard_word(0, guard_size);
+    //return guard_size&0x3f;
+    return api_make_guard_word(0, guard_size);
 }
