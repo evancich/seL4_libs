@@ -525,8 +525,8 @@ sel4utils_configure_process_custom(sel4utils_process_t *process, vka_t *vka,
     int error;
     sel4utils_alloc_data_t * data = NULL;
     memset(process, 0, sizeof(sel4utils_process_t));
-    //seL4_Word cspace_root_data = api_make_guard_skip_word(seL4_WordBits - config.one_level_cspace_size_bits);
-    seL4_Word cspace_root_data = (seL4_Word)((seL4_WordBits - config.one_level_cspace_size_bits)&0x3f);
+    seL4_Word cspace_root_data = api_make_guard_skip_word(seL4_WordBits - config.one_level_cspace_size_bits);
+    //seL4_Word cspace_root_data = (seL4_Word)((seL4_WordBits - config.one_level_cspace_size_bits)&0x3f);
 
     /* create a page directory */
     process->own_vspace = config.create_vspace;

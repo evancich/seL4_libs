@@ -141,8 +141,8 @@ thread_config_new(simple_t *simple)
 {
     sel4utils_thread_config_t config = {0};
     //the next line is broken
-    //seL4_Word data = api_make_guard_skip_word(seL4_WordBits - simple_get_cnode_size_bits(simple));
-    seL4_Word data = (seL4_Word)((seL4_WordBits - simple_get_cnode_size_bits(simple))&0x3f);
+    seL4_Word data = api_make_guard_skip_word(seL4_WordBits - simple_get_cnode_size_bits(simple));
+    //seL4_Word data = (seL4_Word)((seL4_WordBits - simple_get_cnode_size_bits(simple))&0x3f);
     config = thread_config_auth(config, simple_get_tcb(simple));
     return thread_config_cspace(config, simple_get_cnode(simple), data);
 }

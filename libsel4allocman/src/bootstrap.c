@@ -447,8 +447,8 @@ static int bootstrap_new_1level_cspace(bootstrap_info_t *bs, int size) {
     error = seL4_CNode_Mint(
         node.capPtr, new_cnode, size,
         node.root, node.capPtr, node.capDepth,
-        //seL4_AllRights, api_make_guard_skip_word(seL4_WordBits - size));
-        seL4_AllRights, (seL4_Word)(seL4_WordBits - size)&0x3f);
+        seL4_AllRights, api_make_guard_skip_word(seL4_WordBits - size));
+        //seL4_AllRights, (seL4_Word)(seL4_WordBits - size)&0x3f);
     if (error != seL4_NoError) {
         return 1;
     }
@@ -464,8 +464,8 @@ static int bootstrap_new_1level_cspace(bootstrap_info_t *bs, int size) {
     /* now we can call set space */
     error = api_tcb_set_space(bs->tcb.capPtr, 0,
                 node.capPtr,
-                //api_make_guard_skip_word(seL4_WordBits - size),
-        	(seL4_Word)(seL4_WordBits - size)&0x3f,
+                api_make_guard_skip_word(seL4_WordBits - size),
+                //(seL4_Word)(seL4_WordBits - size)&0x3f,
                 bs->pd.capPtr, seL4_NilData);
     if (error != seL4_NoError) {
         return 1;
@@ -560,8 +560,8 @@ static int bootstrap_new_2level_cspace(bootstrap_info_t *bs, size_t l1size, size
     error = seL4_CNode_Mint(
         l2node.capPtr, cnode, l2size,
         l1node.root, l1node.capPtr, l1node.capDepth,
-        //seL4_AllRights, api_make_guard_skip_word(seL4_WordBits - l1size - l2size));
-       	seL4_AllRights, (seL4_Word)(seL4_WordBits - l1size - l2size)&0x3f);
+        seL4_AllRights, api_make_guard_skip_word(seL4_WordBits - l1size - l2size));
+       	//seL4_AllRights, (seL4_Word)(seL4_WordBits - l1size - l2size)&0x3f);
     if (error != seL4_NoError) {
         return 1;
     }
@@ -600,8 +600,8 @@ static int bootstrap_new_2level_cspace(bootstrap_info_t *bs, size_t l1size, size
     /* now we can call set space */
     error = api_tcb_set_space(bs->tcb.capPtr, 0,
                 l1node.capPtr,
-                //api_make_guard_skip_word(seL4_WordBits - l1size - l2size),
-       		(seL4_Word)(seL4_WordBits - l1size - l2size)&0x3f,
+                api_make_guard_skip_word(seL4_WordBits - l1size - l2size),
+       		    //(seL4_Word)(seL4_WordBits - l1size - l2size)&0x3f,
                 bs->pd.capPtr, seL4_NilData);
     if (error != seL4_NoError) {
         return 1;
