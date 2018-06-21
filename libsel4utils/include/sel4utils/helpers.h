@@ -26,6 +26,15 @@
 #error "Word size unsupported"
 #endif /* CONFIG_WORD_SIZE */
 
+
+int
+sel4utils_stack_copy_args(vspace_t *current_vspace, vspace_t *target_vspace,
+                          vka_t *vka, int argc, char *argv[], uintptr_t *dest_argv, uintptr_t *initial_stack_pointer);
+int
+sel4utils_stack_write_constant(vspace_t *current_vspace, vspace_t *target_vspace,
+                               vka_t *vka, long value, uintptr_t *initial_stack_pointer);
+
+
 /* write to a remote stack */
 int sel4utils_stack_write(vspace_t *current_vspace, vspace_t *target_vspace,
                       vka_t *vka, void *buf, size_t len, uintptr_t *stack_top);

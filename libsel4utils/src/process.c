@@ -229,14 +229,14 @@ sel4utils_stack_write(vspace_t *current_vspace, vspace_t *target_vspace,
     return 0;
 }
 
-static int
+int
 sel4utils_stack_write_constant(vspace_t *current_vspace, vspace_t *target_vspace,
                                vka_t *vka, long value, uintptr_t *initial_stack_pointer)
 {
     return sel4utils_stack_write(current_vspace, target_vspace, vka, &value, sizeof(value), initial_stack_pointer);
 }
 
-static int
+int
 sel4utils_stack_copy_args(vspace_t *current_vspace, vspace_t *target_vspace,
                           vka_t *vka, int argc, char *argv[], uintptr_t *dest_argv, uintptr_t *initial_stack_pointer)
 {
