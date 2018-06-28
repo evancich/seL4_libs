@@ -1291,11 +1291,20 @@ allocman_t *bootstrap_use_bootinfo(seL4_BootInfo *bi, size_t pool_size, void *po
 }
 
 void bootstrap_configure_virtual_pool(allocman_t *alloc, void *vstart, size_t vsize, seL4_CPtr pd) {
+    int error;
     /* configure reservation for the virtual pool */
     /* assume we are using 4k pages. maybe this should be a Kconfig option at some point?
      * we ignore any errors */
-    allocman_configure_utspace_reserve(alloc, (struct allocman_utspace_chunk) {vka_get_object_size(seL4_ARCH_4KPage, 0), seL4_ARCH_4KPage, 3});
-    allocman_configure_utspace_reserve(alloc, (struct allocman_utspace_chunk) {vka_get_object_size(seL4_ARCH_PageTableObject, 0), seL4_ARCH_PageTableObject, 1});
+    error = allocman_configure_utspace_reserve(alloc, (struct allocman_utspace_chunk) {vka_get_object_size(seL4_ARCH_4KPage, 0), seL4_ARCH_4KPage, 3});
+    if(error) {
+        ZF_LOGE("Failed to configure utspace reservation");
+        return;
+    }
+    error = allocman_configure_utspace_reserve(alloc, (struct allocman_utspace_chunk) {vka_get_object_size(seL4_ARCH_PageTableObject, 0), seL4_ARCH_PageTableObject, 1});
+    if(error) {
+        ZF_LOGE("Failed to configure utspace reservation for page table");
+        return;
+    }
     allocman_sel4_arch_configure_reservations(alloc);
     mspace_dual_pool_attach_virtual(
             (mspace_dual_pool_t*)alloc->mspace.mspace,

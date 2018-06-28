@@ -15,7 +15,16 @@
 #include <allocman/allocman.h>
 
 static inline void allocman_sel4_arch_configure_reservations(allocman_t *alloc) {
-    allocman_configure_utspace_reserve(alloc, (struct allocman_utspace_chunk) {vka_get_object_size(seL4_ARM_PageDirectoryObject, 0), seL4_ARM_PageDirectoryObject, 1});
-    allocman_configure_utspace_reserve(alloc, (struct allocman_utspace_chunk) {vka_get_object_size(seL4_ARM_PageUpperDirectoryObject, 0), seL4_ARM_PageUpperDirectoryObject, 1});
+    int error;
+    error = allocman_configure_utspace_reserve(alloc, (struct allocman_utspace_chunk) {vka_get_object_size(seL4_ARM_PageDirectoryObject, 0), seL4_ARM_PageDirectoryObject, 1});
+    if(error) {
+        ZF_LOGE("Failed to configure utspace reservation for page dir, %d", error);
+        return;
+    }
+    error = allocman_configure_utspace_reserve(alloc, (struct allocman_utspace_chunk) {vka_get_object_size(seL4_ARM_PageUpperDirectoryObject, 0), seL4_ARM_PageUpperDirectoryObject, 1});
+    if(error) {
+        ZF_LOGE("Failed to configure utspace reservation for upper page dir, %d", error);
+        return;
+    }
 }
 
