@@ -75,6 +75,7 @@ load_segment(vspace_t *loadee_vspace, vspace_t *loader_vspace,
         ZF_LOGE("Error, file_size %zu > segment_size %zu", file_size, segment_size);
         return seL4_InvalidArgument;
     }
+    seL4_CPtr loadee_vspace_root = vspace_get_root(loadee_vspace);
 
     /* create a slot to map a page into the loader address space */
     seL4_CPtr loader_slot;
@@ -157,6 +158,21 @@ load_segment(vspace_t *loadee_vspace, vspace_t *loader_vspace,
         /* Flush the caches */
         seL4_ARM_Page_Unify_Instruction(loader_frame_cap.capPtr, 0, PAGE_SIZE_4K);
         seL4_ARM_Page_Unify_Instruction(loadee_frame_cap.capPtr, 0, PAGE_SIZE_4K);
+
+
+        /**
+         * For arm we can set regions to be non-executable.
+         */
+        seL4_ARCH_VMAttributes vm_attrs = seL4_ARM_ParityEnabled;
+        vm_attrs |= (region.cacheable) ? seL4_ARM_PageCacheable : 0;
+        vm_attrs |= (region.executable) ? 0 : seL4_ARM_ExecuteNever;
+
+        seL4_ARCH_Page_Remap(loadee_frame_cap.capPtr,
+                             loadee_vspace_root,
+                             region.rights,
+                             vm_attrs);
+
+
 #endif /* CONFIG_ARCH_ARM */
 
         /* now unmap the page in the loader address space */
@@ -396,11 +412,18 @@ read_regions(char* elf_file, size_t total_regions, sel4utils_elf_region_t region
 
             region->cacheable = 1;
             region->rights = rights_from_elf(elf_getProgramHeaderFlags(elf_file, i));
+            region->executable = (elf_getProgramHeaderFlags(elf_file, i) & PF_X) ? 1 : 0;
             // elf_getProgramHeaderMemorySize should just return `uintptr_t`
             region->elf_vstart = (void*)(uintptr_t)elf_getProgramHeaderVaddr(elf_file, i);
             region->size = elf_getProgramHeaderMemorySize(elf_file, i);
             region->segment_index = i;
             region_id++;
+            ZF_LOGD("Loading elf region with RWX=%i%i%i",
+                    seL4_CapRights_ptr_get_capAllowRead(&region->rights),
+                    seL4_CapRights_ptr_get_capAllowWrite(&region->rights),
+                    region->executable);
+            ZF_LOGW_IF(seL4_CapRights_ptr_get_capAllowWrite(&region->rights) && region->executable,
+                       "Warning: Loading Elf region with writable and executable permissions.");
         }
     }
     if (region_id != total_regions) {

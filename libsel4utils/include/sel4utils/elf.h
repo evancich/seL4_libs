@@ -29,6 +29,7 @@
 
 typedef struct sel4utils_elf_region {
     seL4_CapRights_t rights;
+    int executable;
     /* These two vstarts may differ if the elf was not mapped 1to1. Such an elf is not
      * runnable, but allows it to be loaded into a vspace where it is not intended to be run.
      * This is also as reported by the elf file. */

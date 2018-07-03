@@ -39,8 +39,17 @@ static int _add_page(allocman_t *alloc, seL4_CPtr pd, void *vaddr)
         ZF_LOGV("Failed to allocate frame");
         return error;
     }
+    /**
+     * RTH:
+     * This isn't pretty, and it isn't the right place for it,
+     * but this will have to go here for now.
+     */
+    seL4_ARCH_VMAttributes vm_attrs = seL4_ARCH_Default_VMAttributes;
+#ifdef CONFIG_ARCH_ARM
+    vm_attrs |= seL4_ARM_ExecuteNever;
+#endif
     while ((error = seL4_ARCH_Page_Map(frame_path.capPtr, pd, (seL4_Word) vaddr, seL4_AllRights,
-                    seL4_ARCH_Default_VMAttributes)) == seL4_FailedLookup) {
+                    vm_attrs)) == seL4_FailedLookup) {
         cspacepath_t path;
         error = allocman_cspace_alloc(alloc, &path);
         if (error) {
