@@ -116,6 +116,20 @@ static void *alloc_and_map(vspace_t *vspace, size_t size) {
                 return NULL;
             }
 
+            /**
+             * This is a workaound since *_map_page doesn't expose exec perms
+             */
+#ifdef CONFIG_ARCH_ARM
+            error = seL4_ARCH_Page_Remap(frame.cptr,
+                                         data->vspace_root,
+                                         seL4_AllRights,
+                                         seL4_ARCH_Default_VMAttributes | seL4_ARM_ExecuteNever);
+            if(error) {
+                LOG_ERROR("Failed to remap bootstrap frame");
+                return NULL;
+            }
+#endif
+
             /* Zero the memory */
             memset(vaddr, 0, PAGE_SIZE_4K);
 
@@ -311,6 +325,25 @@ sel4utils_get_vspace_with_map(vspace_t *loader, vspace_t *new_vspace, sel4utils_
         return -1;
     }
 
+    /**
+     * This is a workaound since *_map_page doesn't expose exec perms
+     */
+#ifdef CONFIG_ARCH_ARM
+    int error;
+    for(int i = 0; i < sizeof(vspace_mid_level_t)/PAGE_SIZE_4K; i++) {
+        sel4utils_alloc_data_t *loader_data = get_alloc_data(loader);
+        error = seL4_ARCH_Page_Remap(vspace_get_cap(loader,
+                                        (void*)((seL4_Word)data->top_level + (i << seL4_PageBits))),
+                                     loader_data->vspace_root,
+                                     seL4_AllRights,
+                                     seL4_ARCH_Default_VMAttributes | seL4_ARM_ExecuteNever);
+        if(error) {
+            ZF_LOGE("Failed to remap bootstrap frame error:%i", error);
+            return -2;
+        }
+    }
+#endif
+
     common_init_post_bootstrap(new_vspace, map_page);
 
     return 0;
@@ -349,7 +382,7 @@ sel4utils_bootstrap_vspace(vspace_t *vspace, sel4utils_alloc_data_t *data,
     }
 
     data->bootstrap = NULL;
-
+    
     if (bootstrap_page_table(vspace)) {
         return -1;
     }

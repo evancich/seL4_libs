@@ -105,6 +105,7 @@ sys_mremap(va_list ap)
   */
 
 vspace_t *muslc_this_vspace = NULL;
+seL4_CPtr muslc_vspace_root_cap = seL4_CapNull;
 reservation_t muslc_brk_reservation = {.res = NULL};
 void *muslc_brk_reservation_start = NULL;
 
@@ -168,10 +169,26 @@ sys_brk_dynamic(va_list ap)
         while (brk_start < newbrk) {
             int error = vspace_new_pages_at_vaddr(muslc_this_vspace, (void*) brk_start, 1,
                         seL4_PageBits, muslc_brk_reservation);
+                                          
             if (error) {
                 ZF_LOGE("Mapping new pages to extend brk region failed\n");
                 return 0;
             }
+
+            /**
+             * This is a fix for the fact that libsel4vspace doesn't expose the execute bits
+             */
+#ifdef CONFIG_ARCH_ARM
+            error = seL4_ARCH_Page_Remap(vspace_get_cap(muslc_this_vspace, (void*)brk_start),
+                                         muslc_vspace_root_cap,
+                                         seL4_ReadWrite,
+                                         seL4_ARCH_Default_VMAttributes | seL4_ARM_ExecuteNever);
+            if(error) {
+                ZF_LOGE("Failed to remap new pages on heap");
+                return 0;
+            }
+#endif
+
             brk_start += PAGE_SIZE_4K;
         }
         ret = brk_start;
@@ -226,6 +243,24 @@ sys_mmap_impl_dynamic(void *addr, size_t length, int prot, int flags, int fd, of
         /* determine how many pages we need */
         uint32_t pages = BYTES_TO_4K_PAGES(length);
         void *ret = vspace_new_pages(muslc_this_vspace, seL4_AllRights, pages, seL4_PageBits);
+
+        /**
+         * This is a fix for the fact that libsel4vspace doesn't expose the execute bits
+         */
+#ifdef CONFIG_ARCH_ARM
+        int error;
+        for(int i = 0; i < pages; i++) {
+            error = seL4_ARCH_Page_Remap(vspace_get_cap(muslc_this_vspace, 
+                                                   (void*)((seL4_Word)ret + (i << seL4_PageBits))),
+                                         muslc_vspace_root_cap,
+                                         seL4_ReadWrite,
+                                         seL4_ARCH_Default_VMAttributes | seL4_ARM_ExecuteNever);
+            if(error) {
+                ZF_LOGE("Failed to remap new pages on heap");
+                return 0;
+            }
+        }
+#endif   
         return (long)ret;
     }
     assert(!"not implemented");
@@ -305,6 +340,24 @@ sys_mremap_dynamic(va_list ap)
     }
     /* free the reservation book keeping */
     vspace_free_reservation(muslc_this_vspace, reservation);
+
+    /**
+     * This is a fix for the fact that libsel4vspace doesn't expose the execute bits
+     */
+#ifdef CONFIG_ARCH_ARM
+    for(int i = 0; i < new_pages; i++) {
+        error = seL4_ARCH_Page_Remap(vspace_get_cap(muslc_this_vspace, 
+                                           (void*)((seL4_Word)new_address + (i << seL4_PageBits))),
+                                     muslc_vspace_root_cap,
+                                     seL4_ReadWrite,
+                                     seL4_ARCH_Default_VMAttributes | seL4_ARM_ExecuteNever);
+        if(error) {
+            ZF_LOGE("Failed to remap new pages on heap");
+            return 0;
+        }
+    }
+#endif  
+
     return (long)new_address;
 restore:
     /* try and recreate the original mapping */

@@ -381,6 +381,9 @@ prepare_reservations(size_t total_regions, sel4utils_elf_region_t regions[total_
         /* Record this reservation layout */
         regions[i].reservation_size = current_res_size;
         regions[i].reservation_vstart = (void *)current_res_start;
+        ZF_LOGD("Reserving elf region: start %p (%lu bytes)",
+                regions[i].reservation_vstart,
+                (long unsigned)regions[i].reservation_size);
         prev_res_size = current_res_size;
         prev_res_start = current_res_start;
         prev_rights = current_rights;
@@ -418,7 +421,9 @@ read_regions(char* elf_file, size_t total_regions, sel4utils_elf_region_t region
             region->size = elf_getProgramHeaderMemorySize(elf_file, i);
             region->segment_index = i;
             region_id++;
-            ZF_LOGD("Loading elf region with RWX=%i%i%i",
+            ZF_LOGD("Reading elf region: start %p (%lu bytes, RWX=%i%i%i)",
+                    region->elf_vstart,
+                    (long unsigned)region->size,
                     seL4_CapRights_ptr_get_capAllowRead(&region->rights),
                     seL4_CapRights_ptr_get_capAllowWrite(&region->rights),
                     region->executable);
@@ -559,7 +564,6 @@ sel4utils_elf_load_record_regions(vspace_t *loadee, vspace_t *loader, vka_t *loa
         ZF_LOGE("Failed to reserve regions");
         return NULL;
     }
-
     /* Load Map reservations and load in elf data */
     error = load_segments(loadee, loader, loadee_vka, loader_vka, elf_file, num_regions, regions);
     if (error) {

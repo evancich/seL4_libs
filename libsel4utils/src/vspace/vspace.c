@@ -43,6 +43,24 @@ create_level(vspace_t *vspace, size_t size)
     if (level == NULL) {
         return NULL;
     }
+
+#ifdef CONFIG_ARCH_ARM
+    int error;
+    sel4utils_alloc_data_t *bootstrap_data = get_alloc_data(data->bootstrap);
+    for(int i = 0; i < size/PAGE_SIZE_4K; i++) {
+        error = seL4_ARCH_Page_Remap(vspace_get_cap(data->bootstrap,
+                                           (void*)((seL4_Word)level + (i << seL4_PageBits))),
+                                     bootstrap_data->vspace_root,
+                                     seL4_AllRights,
+                                     seL4_ARCH_Default_VMAttributes | seL4_ARM_ExecuteNever);
+        if(error) {
+            ZF_LOGE("Failed to remap bookkeeping pages for vspace");
+            return NULL;
+        }
+    }
+#endif
+    
+
     memset(level, 0, size);
 
     return level;
