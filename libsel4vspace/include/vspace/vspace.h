@@ -420,6 +420,8 @@ struct vspace {
 
     vspace_allocated_object_fn allocated_object;
     void *allocated_object_cookie;
+
+    void *sync_data;
 };
 
 /* convenient wrappers */
