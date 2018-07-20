@@ -741,8 +741,8 @@ static void free_page(vspace_t *vspace, vka_t *vka, uintptr_t vaddr) {
             test_vaddr += PAGE_SIZE_4K;
             num_4k_entries++;
         }
-        sel4utils_unmap_pages(vspace, (void*)vaddr, 1, PAGE_BITS_4K * num_4k_entries, vka);
     }
+    sel4utils_unmap_pages(vspace, (void*)vaddr, 1, PAGE_BITS_4K * num_4k_entries, vka);
 }
 
 static void
