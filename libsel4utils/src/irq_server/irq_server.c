@@ -196,7 +196,6 @@ _irq_thread_entry(struct irq_server_thread* st)
     notification = st->node->notification;
     node_ptr = (uintptr_t)st->node;
     label = st->label;
-    ZF_LOGD("thread started. Waiting on endpoint %d\n", notification);
 
     while (1) {
         seL4_Word badge;

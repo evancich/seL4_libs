@@ -381,9 +381,6 @@ prepare_reservations(size_t total_regions, sel4utils_elf_region_t regions[total_
         /* Record this reservation layout */
         regions[i].reservation_size = current_res_size;
         regions[i].reservation_vstart = (void *)current_res_start;
-        ZF_LOGD("Reserving elf region: start %p (%lu bytes)",
-                regions[i].reservation_vstart,
-                (long unsigned)regions[i].reservation_size);
         prev_res_size = current_res_size;
         prev_res_start = current_res_start;
         prev_rights = current_rights;
@@ -421,12 +418,6 @@ read_regions(char* elf_file, size_t total_regions, sel4utils_elf_region_t region
             region->size = elf_getProgramHeaderMemorySize(elf_file, i);
             region->segment_index = i;
             region_id++;
-            ZF_LOGD("Reading elf region: start %p (%lu bytes, RWX=%i%i%i)",
-                    region->elf_vstart,
-                    (long unsigned)region->size,
-                    seL4_CapRights_ptr_get_capAllowRead(&region->rights),
-                    seL4_CapRights_ptr_get_capAllowWrite(&region->rights),
-                    region->executable);
             ZF_LOGW_IF(seL4_CapRights_ptr_get_capAllowWrite(&region->rights) && region->executable,
                        "Warning: Loading Elf region with writable and executable permissions.");
         }
@@ -487,7 +478,7 @@ elf_reserve_regions_in_vspace(vspace_t *loadee, char* elf_file,
     }
 
     /* Sort region list */
-    SGLIB_ARRAY_SINGLE_QUICK_SORT(sel4utils_elf_region_t, regions, num_regions, compare_regions);
+    SGLIB_ARRAY_SINGLE_QUICK_SORT(UNUSED sel4utils_elf_region_t, regions, num_regions, compare_regions);
 
     error = prepare_reservations(num_regions, regions);
     if (error) {

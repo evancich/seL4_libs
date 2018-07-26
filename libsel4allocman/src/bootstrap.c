@@ -994,7 +994,6 @@ static size_t get_next_alignment_bits(uintptr_t base, uintptr_t goal, size_t max
     /* The largest untyped we can make is the highest power of 2 component of next_size */
     size_t next_size_bits = seL4_WordBits - 1 - CLZL((long)next_size);
 
-    ZF_LOGD("goal 0x%zx, base: 0x%zx, next_size: 0x%zx, 0x%zx, 0x%zx, 0x%zx", goal, base, (uintptr_t) BIT(next_size_bits), next_size, CLZL((long)next_size),alignment);
     return next_size_bits;
 }
 
