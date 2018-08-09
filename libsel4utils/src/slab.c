@@ -77,7 +77,7 @@ static int slab_utspace_alloc(void *data, const cspacepath_t *dest, seL4_Word ty
 
     slab_t *slab = &sdata->slabs[type];
     if (slab->next == slab->n) {
-        ZF_LOGW("Slab of type %lu expired, using delegate allocator", type);
+        ZF_LOGW("Slab of type %lu expired, using delegate allocator", (long unsigned)type);
         return vka_utspace_alloc(sdata->delegate, dest, type, size_bits, res);
     }
 
