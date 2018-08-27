@@ -66,7 +66,7 @@ sys_tgkill(va_list ap)
 long
 sys_tkill(va_list ap)
 {
-    ZF_LOGV("%s assuming self kill", __FUNCTION__);
+    //ZF_LOGV("%s assuming self kill", __FUNCTION__);
     sel4_abort();
     return 0;
 }
@@ -74,6 +74,6 @@ sys_tkill(va_list ap)
 long
 sys_exit_group(va_list ap)
 {
-    ZF_LOGV("Ignoring call to %s", __FUNCTION__);
+    //ZF_LOGV("Ignoring call to %s", __FUNCTION__);
     return 0;
 }
